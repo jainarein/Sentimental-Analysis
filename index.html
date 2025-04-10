@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sentiment Sleuth with Voice</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f4f6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    textarea {
+      width: 400px;
+      height: 150px;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #2563eb;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧠 Sentiment Sleuth</h1>
+  <textarea id="inputText" placeholder="Type or speak something to analyze..."></textarea>
+  <br />
+  <button onclick="startVoice()">🎤 Speak</button>
+  <button onclick="analyze()">Analyze</button>
+  <div id="result"></div>
+
+  <script>
+    function startVoice() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-US';
+      recognition.start();
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('inputText').value = transcript;
+      };
+
+      recognition.onerror = function(event) {
+        alert('Voice recognition error: ' + event.error);
+      };
+    }
+
+    async function analyze() {
+      const text = document.getElementById('inputText').value;
+      const response = await fetch('http://localhost:5000/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text })
+      });
+      const data = await response.json();
+      document.getElementById('result').innerText = "Sentiment: " + data.sentiment;
+    }
+  </script>
+</body>
+</html>
